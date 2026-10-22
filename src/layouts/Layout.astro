@@ -1,0 +1,27 @@
+---
+const { title = 'Classificação Fiscal' } = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <style>
+    :root { --bg: #f7f8fa; --surface: #fff; --border: #e5e7eb; --primary: #2d1b69; --text: #1f2937; --text-dim: #6b7280; --radius: 8px; --shadow: 0 1px 3px rgba(0,0,0,.06); }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+    header { background: var(--primary); color: #fff; padding: 16px 24px; box-shadow: var(--shadow); }
+    header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+    main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+    .badge.ativo { background: #d1fae5; color: #065f46; }
+    .badge.analise { background: #fef3c7; color: #92400e; }
+    .badge.outros { background: #e5e7eb; color: #374151; }
+  </style>
+</head>
+<body>
+  <header><h1>📋 Classificação Fiscal</h1></header>
+  <main><slot /></main>
+</body>
+</html>

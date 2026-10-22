@@ -1,0 +1,114 @@
+---
+import Layout from '../layouts/Layout.astro';
+import dados from '../../data/classificacoes.json';
+const items = dados;
+---
+<Layout>
+  <div id="app" data-items={JSON.stringify(items)}></div>
+  <script>
+    import Fuse from 'fuse.js';
+    const items = JSON.parse(document.getElementById('app').dataset.items);
+    
+    // ✨ MÁGICA DA BUSCA: Adiciona uma "palavra-chave invisível" se houver histórico
+    const itemsComKeywords = items.map(i => ({
+      ...i,
+      hidden_keywords: (i.historico_reclassificacao || '').trim() !== '' ? 'reclassificado' : ''
+    }));
+
+    const fuse = new Fuse(itemsComKeywords, {
+      keys: [
+        { name: 'item', weight: 0.4 }, 
+        { name: 'pn', weight: 0.3 },
+        { name: 'ncm', weight: 0.2 }, 
+        { name: 'classe', weight: 0.1 },
+        { name: 'hidden_keywords', weight: 0.5 } // Peso alto para achar rápido
+      ],
+      threshold: 0.35, 
+      ignoreLocation: true, 
+      minMatchCharLength: 2
+    });
+
+    const classes = [...new Set(items.map(i => i.classe).filter(Boolean))].sort();
+    
+    let selected = null, filtroClasse = '', texto = '';
+
+    function esc(s) { return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    function render() {
+      let lista = texto ? fuse.search(texto).map(r => r.item) : [...items];
+      
+      if (filtroClasse) lista = lista.filter(i => i.classe === filtroClasse);
+      
+      lista.sort((a, b) => (a.item || '').localeCompare(b.item || '', 'pt-BR'));
+
+      document.getElementById('app').innerHTML = `
+        <div class="toolbar">
+          <input id="busca" type="search" placeholder="🔍 Buscar por item, PN, NCM, classe ou 'Reclassificado'..." value="${esc(texto)}" />
+          <select id="f-classe"><option value="">Todas as classes</option>${classes.map(c => `<option value="${esc(c)}" ${c === filtroClasse ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>
+          <span class="counter">${lista.length} de ${items.length} itens</span>
+        </div>
+        <div class="layout">
+          <div class="lista">${lista.length === 0 ? '<p class="empty">Nenhum item encontrado.</p>' :
+            lista.map(it => `<article class="card ${selected && selected.pn === it.pn ? 'selected' : ''}" data-pn="${esc(it.pn)}">
+              <div class="card-head"><h3>${esc(it.item)}</h3></div>
+              <div class="card-meta">
+                <span><strong>PN:</strong> ${esc(it.pn)}</span>
+                <span><strong>NCM:</strong> ${esc(it.ncm)}</span>
+                <span><strong>Classe:</strong> ${esc(it.classe || '—')}</span>
+              </div>
+            </article>`).join('')}</div>
+          <aside class="detalhe">${selected ? detalhe(selected) : '<p class="placeholder">Selecione um item para ver os detalhes.</p>'}</aside>
+        </div>`;
+
+      document.getElementById('busca').addEventListener('input', e => { texto = e.target.value; render(); });
+      document.getElementById('f-classe').addEventListener('change', e => { filtroClasse = e.target.value; render(); });
+      document.querySelectorAll('.card').forEach(c => c.addEventListener('click', () => {
+        selected = items.find(i => i.pn === c.dataset.pn); render();
+      }));
+      if (texto) { const b = document.getElementById('busca'); b.focus(); b.setSelectionRange(b.value.length, b.value.length); }
+    }
+
+    function detalhe(it) {
+      return `<h2>${esc(it.item)}</h2>
+        <div class="detail-grid">
+          <div><label>PN</label><p>${esc(it.pn)}</p></div>
+          <div><label>NCM</label><p>${esc(it.ncm)}</p></div>
+          <div><label>EX</label><p>${esc(it.ex || 'N/A')}</p></div>
+          <div><label>Classe</label><p>${esc(it.classe || '—')}</p></div>
+          <div><label>Responsáveis</label><p>${esc(it.responsaveis || '—')}</p></div>
+        </div>
+        ${it.descricao_duimp ? `<section><h4>Descrição DUIMP</h4><p class="long">${esc(it.descricao_duimp)}</p></section>` : ''}
+        ${it.analise ? `<section><h4>Análise</h4><p class="long">${esc(it.analise)}</p></section>` : ''}
+        ${it.historico_reclassificacao ? `<section><h4>Histórico de Reclassificação</h4><p>${esc(it.historico_reclassificacao)}</p></section>` : ''}`;
+    }
+
+    render();
+    const style = document.createElement('style');
+    style.textContent = `
+      .toolbar { display: grid; grid-template-columns: 1fr 200px auto; gap: 12px; margin-bottom: 20px; align-items: center; }
+      .toolbar input, .toolbar select { padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: #fff; }
+      .toolbar input:focus, .toolbar select:focus { outline: 2px solid var(--primary); }
+      .counter { color: var(--text-dim); font-size: 13px; }
+      .layout { display: grid; grid-template-columns: 400px 1fr; gap: 20px; align-items: start; }
+      .lista { display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 200px); overflow-y: auto; padding-right: 6px; }
+      .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; cursor: pointer; transition: .15s; }
+      .card:hover { border-color: var(--primary); transform: translateY(-1px); box-shadow: var(--shadow); }
+      .card.selected { border-color: var(--primary); background: #f5f3ff; box-shadow: var(--shadow); }
+      .card-head { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; align-items: flex-start; }
+      .card-head h3 { margin: 0; font-size: 14px; line-height: 1.3; }
+      .card-meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--text-dim); }
+      .card-meta strong { color: var(--text); }
+      .detalhe { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; min-height: 400px; box-shadow: var(--shadow); }
+      .detalhe h2 { margin: 0 0 20px; font-size: 18px; }
+      .detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+      .detail-grid label { display: block; font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 4px; }
+      .detail-grid p { margin: 0; font-weight: 500; }
+      .detalhe section { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+      .detalhe section h4 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; color: var(--text-dim); }
+      .detalhe .long { white-space: pre-wrap; line-height: 1.6; color: #374151; }
+      .placeholder, .empty { color: var(--text-dim); text-align: center; padding: 40px 20px; }
+      @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .toolbar { grid-template-columns: 1fr; } .detail-grid { grid-template-columns: 1fr 1fr; } }
+    `;
+    document.head.appendChild(style);
+  </script>
+</Layout>

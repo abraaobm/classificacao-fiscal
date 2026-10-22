@@ -1,0 +1,33 @@
+backend:
+  name: github
+  repo: abraaobm/classificacao-fiscal
+  branch: main
+
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+collections:
+  - name: classificacoes
+    label: "Classificações Fiscais"
+    label_singular: "Classificação"
+    folder: "data"
+    create: true
+    delete: true
+    extension: "json"
+    format: "json"
+    identifier_field: pn
+    slug: "{{fields.pn}}"
+    summary: "{{pn}} — {{item}}"
+    fields:
+      - { name: item, label: "Item", widget: string }
+      - { name: classe, label: "Classe", widget: string, required: false }
+      - name: pn
+        label: "PN"
+        widget: string
+        hint: "⚠️ O PN é único. Se já existir, edite o item existente."
+      - { name: ncm, label: "NCM", widget: string, pattern: ['^\\d{8}$', 'NCM deve ter 8 dígitos'] }
+      - { name: ex, label: "EX", widget: string, required: false, default: "N/A" }
+      - { name: descricao_duimp, label: "Descrição DUIMP", widget: text, required: false }
+      - { name: responsaveis, label: "Responsáveis pela Análise", widget: string, required: false }
+      - { name: analise, label: "Análise", widget: text, required: false }
+      - { name: historico_reclassificacao, label: "Histórico de Reclassificação", widget: text, required: false }

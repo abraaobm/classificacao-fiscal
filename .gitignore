@@ -1,0 +1,7 @@
+text
+node_modules/
+dist/
+.astro/
+.site-password
+.DS_Store
+*.log

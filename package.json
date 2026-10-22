@@ -1,0 +1,16 @@
+{
+  "name": "classificacao-fiscal",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "npm run validate && astro build",
+    "preview": "astro preview",
+    "validate": "node scripts/validate-classificacoes.mjs",
+    "csv2json": "node scripts/csv-to-json.mjs"
+  },
+  "dependencies": {
+    "astro": "^4.15.0",
+    "fuse.js": "^7.0.0"
+  }
+}
