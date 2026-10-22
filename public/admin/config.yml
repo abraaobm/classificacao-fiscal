@@ -31,3 +31,9 @@ collections:
       - { name: responsaveis, label: "Responsáveis pela Análise", widget: string, required: false }
       - { name: analise, label: "Análise", widget: text, required: false }
       - { name: historico_reclassificacao, label: "Histórico de Reclassificação", widget: text, required: false }
+      backend:
+  name: github
+  repo: abraaobm/classificacao-fiscal
+  branch: main
+  base_url: https://netlify-cms-github-oauth-provider-one-omega.vercel.app/
+  auth_endpoint: auth
