@@ -31,9 +31,10 @@ collections:
       - { name: responsaveis, label: "Responsáveis pela Análise", widget: string, required: false }
       - { name: analise, label: "Análise", widget: text, required: false }
       - { name: historico_reclassificacao, label: "Histórico de Reclassificação", widget: text, required: false }
-      backend:
+  backend:
   name: github
-  repo: abraaobm/classificacao-fiscal
+  repo: abraaobm/classificacao-fiscal  # Seu usuário e nome do repositório
   branch: main
-  base_url: https://netlify-cms-github-oauth-provider-one-omega.vercel.app/
-  auth_endpoint: auth
+  site_domain: abraaobm.github.io       # O domínio do seu site no GitHub Pages
+  base_url: https://classificacao-fiscal-all.vercel.app  # A URL do seu proxy na Vercel
+  auth_endpoint: /auth                  # O endpoint do proxy
