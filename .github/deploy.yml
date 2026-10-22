@@ -30,3 +30,7 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+         - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist # O Astro, por padrão, gera o site na pasta 'dist'
